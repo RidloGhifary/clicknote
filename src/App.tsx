@@ -1,5 +1,13 @@
-function App() {
-  return <h1 className="text-3xl font-bold underline">Hello world!</h1>;
-}
+import React from "react";
+import CommentPins from "./components/CommentPin";
+import { useClickHandler } from "./hooks/useClickHandler";
 
-export default App;
+export default function App() {
+  useClickHandler();
+
+  return (
+    <React.Fragment>
+      <CommentPins />
+    </React.Fragment>
+  );
+}
