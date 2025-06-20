@@ -1,15 +1,7 @@
 import { create } from "zustand";
+import type { Comment } from "../types/comment";
 
 const STORAGE_KEY = "clicknote_comments";
-
-type Comment = {
-  id: string;
-  text: string;
-  x: number;
-  y: number;
-  solved: boolean;
-  createdAt: Date;
-};
 
 type Store = {
   comments: Comment[];
@@ -17,14 +9,19 @@ type Store = {
   updateComment: (id: string, updatedComment: Partial<Comment>) => void;
   markAsSolved: (id: string) => void;
   deleteComment: (id: string) => void;
+  isCommentMode: boolean;
+  toggleCommentMode: () => void;
 };
 
 export const useCommentStore = create<Store>((set) => {
-  const stored = localStorage.getItem(STORAGE_KEY);
+  const URL = window.location.href;
+  const KEY = `${STORAGE_KEY}_${URL}`;
+  const stored = localStorage.getItem(KEY);
   const initialComments = stored ? JSON.parse(stored) : [];
 
   return {
     comments: initialComments,
+    isCommentMode: false,
 
     addComment: (comment) =>
       set((state) => {
@@ -33,10 +30,11 @@ export const useCommentStore = create<Store>((set) => {
           id: crypto.randomUUID(),
           createdAt: new Date(),
           solved: false,
+          location: URL,
         };
 
         const updatedComments = [...state.comments, newComment];
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedComments));
+        localStorage.setItem(KEY, JSON.stringify(updatedComments));
         return { comments: updatedComments };
       }),
 
@@ -45,7 +43,7 @@ export const useCommentStore = create<Store>((set) => {
         const updated = state.comments.map((c) =>
           c.id === id ? { ...c, ...updates } : c
         );
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+        localStorage.setItem(KEY, JSON.stringify(updated));
         return { comments: updated };
       }),
 
@@ -58,15 +56,18 @@ export const useCommentStore = create<Store>((set) => {
         const updated = state.comments.map((c) =>
           c.id === id ? { ...c, solved: true } : c
         );
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+        localStorage.setItem(KEY, JSON.stringify(updated));
         return { comments: updated };
       }),
 
     deleteComment: (id) =>
       set((state) => {
         const updated = state.comments.filter((c) => c.id !== id);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+        localStorage.setItem(KEY, JSON.stringify(updated));
         return { comments: updated };
       }),
+
+    toggleCommentMode: () =>
+      set((state) => ({ isCommentMode: !state.isCommentMode })),
   };
 });
