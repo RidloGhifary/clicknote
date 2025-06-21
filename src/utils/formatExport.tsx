@@ -1,19 +1,12 @@
 import type { Comment } from "../types/comment";
 
 export function formatCommentsAsText(comments: Comment[]) {
-  return comments
-    .map((c) => {
-      const date = new Date(c.createdAt).toLocaleString();
-
-      return `#${c.id}
-      
+  return comments.map((c, j) => {
+    return `## ${j + 1}
 - Text: ${c.text}
-- Location: ${c.location || "N/A"}
-- Resolved: ${c.solved ? "✅ Yes" : "❌ No"}
-- Position: x: ${c.x}, y: ${c.y}
-- Created At: ${date}
-
---------------------------`;
-    })
-    .join("\n\n");
+- Resolved: ${c.solved ? "✅" : "❌"}
+- Position: x:${c.x}, y:${c.y}
+- Created: ${new Date(c.createdAt).toLocaleString()}
+`;
+  });
 }

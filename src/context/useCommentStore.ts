@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import type { Comment } from "../types/comment";
+import { commentChannel } from "../libs/syncChannel";
 
 const STORAGE_KEY = "clicknote_comments";
 
@@ -19,6 +20,33 @@ export const useCommentStore = create<Store>((set) => {
   const stored = localStorage.getItem(KEY);
   const initialComments = stored ? JSON.parse(stored) : [];
 
+  commentChannel.onmessage = (event) => {
+    const { type, payload } = event.data;
+
+    set((state) => {
+      let updated = [...state.comments];
+
+      if (type === "add") {
+        if (!state.comments.some((c) => c.id === payload.id)) {
+          updated = [...state.comments, payload];
+        }
+      }
+
+      if (type === "update") {
+        updated = state.comments.map((c) =>
+          c.id === payload.id ? payload : c
+        );
+      }
+
+      if (type === "delete") {
+        updated = state.comments.filter((c) => c.id !== payload.id);
+      }
+
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      return { comments: updated };
+    });
+  };
+
   return {
     comments: initialComments,
     isCommentMode: false,
@@ -35,6 +63,9 @@ export const useCommentStore = create<Store>((set) => {
 
         const updatedComments = [...state.comments, newComment];
         localStorage.setItem(KEY, JSON.stringify(updatedComments));
+
+        commentChannel.postMessage({ type: "add", payload: newComment });
+
         return { comments: updatedComments };
       }),
 
@@ -43,7 +74,10 @@ export const useCommentStore = create<Store>((set) => {
         const updated = state.comments.map((c) =>
           c.id === id ? { ...c, ...updates } : c
         );
+
         localStorage.setItem(KEY, JSON.stringify(updated));
+        commentChannel.postMessage({ type: "update", payload: updated });
+
         return { comments: updated };
       }),
 
@@ -63,7 +97,10 @@ export const useCommentStore = create<Store>((set) => {
     deleteComment: (id) =>
       set((state) => {
         const updated = state.comments.filter((c) => c.id !== id);
+
         localStorage.setItem(KEY, JSON.stringify(updated));
+        commentChannel.postMessage({ type: "delete", payload: { id } });
+
         return { comments: updated };
       }),
 
