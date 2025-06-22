@@ -15,9 +15,6 @@
       "require": "./dist/index.umd.js"
     }
   },
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
-  },
   "bugs": {
     "url": "https://github.com/RidloGhifary/clicknote/issues"
   },
