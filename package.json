@@ -7,7 +7,7 @@
   "module": "./dist/index.es.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/RidloGhifary/clicknote.git"
+    "url": "git+https://github.com/RidloGhifary/clicknote.git"
   },
   "exports": {
     ".": {
